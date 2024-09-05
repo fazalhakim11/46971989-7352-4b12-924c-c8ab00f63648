@@ -1,1 +1,1 @@
-type formData = any
+type formData = any;

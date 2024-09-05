@@ -1,11 +1,11 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   isShow: false,
 };
 
 const userSlice = createSlice({
-  name: 'isShow',
+  name: "isShow",
   initialState,
   reducers: {
     shows: (state) => {

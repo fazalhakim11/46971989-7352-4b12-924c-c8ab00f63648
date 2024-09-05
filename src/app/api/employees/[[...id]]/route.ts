@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import prisma from "@/lib/prisma";
 import employeeSchema from "@/lib/validation";
 import { Prisma } from "@prisma/client";
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json({ employees, totalEmployees });
+  return NextResponse.json({ employees, totalEmployees, page, pageSize });
 }
 
 export async function DELETE(
@@ -102,7 +103,6 @@ export async function PATCH(
 ) {
   const employeeId = parseInt(params.id, 10);
 
-  // Read and parse request body
   let updatedData: any;
   try {
     updatedData = await request.json();
@@ -115,7 +115,7 @@ export async function PATCH(
   }
 
   try {
-  const validatedData = employeeSchema.parse(updatedData);
+    const validatedData = employeeSchema.parse(updatedData);
     const updatedEmployee = await prisma.employee.update({
       where: { id: employeeId },
       data: {
@@ -123,8 +123,8 @@ export async function PATCH(
         lastName: validatedData.lastName,
         position: validatedData.position,
         phone: validatedData.phone,
-        email: validatedData.email
-      }, 
+        email: validatedData.email,
+      },
     });
 
     return NextResponse.json(updatedEmployee, { status: 201 });
