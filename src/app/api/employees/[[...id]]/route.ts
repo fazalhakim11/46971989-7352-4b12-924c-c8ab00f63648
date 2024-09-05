@@ -58,25 +58,77 @@ export async function GET(request: Request) {
   return NextResponse.json({ employees, totalEmployees });
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-    const employeeId = parseInt(params.id, 10);
-  
-    if (isNaN(employeeId)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
-    }
-  
-    try {
-      const deletedEmployee = await prisma.employee.delete({
-        where: { id: employeeId },
-      });
-  
-      return NextResponse.json(deletedEmployee, { status: 200 });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
-        }
-      }
-      return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
-    }
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const employeeId = parseInt(params.id, 10);
+
+  if (isNaN(employeeId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
+
+  try {
+    const deletedEmployee = await prisma.employee.delete({
+      where: { id: employeeId },
+    });
+
+    return NextResponse.json(deletedEmployee, { status: 200 });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return NextResponse.json(
+          { error: "Employee not found" },
+          { status: 404 }
+        );
+      }
+    }
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  {
+    params,
+  }: {
+    params: {
+      id: string;
+    };
+  }
+) {
+  const employeeId = parseInt(params.id, 10);
+
+  // Read and parse request body
+  let updatedData: any;
+  try {
+    updatedData = await request.json();
+  } catch (error) {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  if (isNaN(employeeId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
+  try {
+  const validatedData = employeeSchema.parse(updatedData);
+    const updatedEmployee = await prisma.employee.update({
+      where: { id: employeeId },
+      data: {
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        position: validatedData.position,
+        phone: validatedData.phone,
+        email: validatedData.email
+      }, 
+    });
+
+    return NextResponse.json(updatedEmployee, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+}
